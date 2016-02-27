@@ -117,4 +117,9 @@ describe("$ selector function", function() {
     elements = $('div > ul > li');
     expect(elements.length).toEqual(18);
   })
+
+  it('should handle selectors that search for attributes', function() {
+    elements = $('input[type="checkbox"]');
+    expect(elements[0].toEqual('checkbox'))
+  })
 });

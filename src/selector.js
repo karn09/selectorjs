@@ -65,10 +65,10 @@ function traverseDomAndCollectElements(matchFunc, startEl, resultSet) {
   }
   return resultSet;
 }
-
-function retChildNodes(elements) {
+//
+function retChildNodes(elementsArray) {
   var res = [];
-  elements.forEach(function(el) {
+  elementsArray.forEach(function(el) {
     for (var i = 0; i < el.childNodes.length; i++) {
       res.push(el.childNodes[i]);
     }
@@ -90,42 +90,9 @@ function flatTraverseDom(matchFuncArr, currNodes) {
         return node
       };
     });
-    console.log(results)
     currNodes = retChildNodes(results);
   });
   return results;
-
-
-  // var first = matchFuncArr[0];
-  // var firstSet = [];
-  // currNodes = currNodes;
-  // for (var i = 0; i < currNodes.length; i++) {
-  //   if (first(currNodes[i])) {
-  //     firstSet.push(currNodes[i]);
-  //   }
-  // }
-  // console.log(firstSet)
-  //
-  // var second = matchFuncArr[1];
-  // var secondSet = [];
-  // currNodes = retChildNodes(firstSet)
-  // for (var i = 0; i < currNodes.length; i++) {
-  //   if (second(currNodes[i])) {
-  //     secondSet.push(currNodes[i]);
-  //   }
-  // }
-  // console.log(secondSet);
-  //
-  // var third = matchFuncArr[2];
-  // var thirdSet = [];
-  // currNodes = retChildNodes(secondSet)
-  // for (var i = 0; i < currNodes.length; i++) {
-  //   if (third(currNodes[i])) {
-  //     thirdSet.push(currNodes[i]);
-  //   }
-  // }
-  // console.log(thirdSet) // no more found!
-  //
 }
 
 function matchFunctions(selectors) {
@@ -136,16 +103,77 @@ function matchFunctions(selectors) {
     return matchFunctionMaker(el);
   });
 }
+// TODO: support selector input: $('input[type="text"]')
+// $('input')[0].attributes.type
+
+function findAttributes(elements, args) {
+  var res = []
+  console.log(elements, args)
+  elements.forEach(function(element) {
+    res.push(element)
+  })
+  return res;
+}
+
+// TODO: break up and return selectors if needed
+function selectorParse(selector) {
+
+  //types: single, multi, attr
+  //sel: array of or single selector
+  //args: if attr, then return arguments, attributes.type = 'text'
+  //      {type: 'text'}
+  if (selector.indexOf('>') !== -1) {
+    var multiSelector = selector.split('>').map(function(item) {
+      return item.trim()
+    });
+    return {
+      type: 'multi',
+      select: multiSelector,
+      args: '>',
+    };
+  } else if (selector.indexOf('[') !== -1) {
+    // ugh... terrible code below
+    var selSplit = selector.split('[');
+    selector = selSplit[0];
+    var attr = selSplit[1].split('=')[0];
+    var attrType = selSplit[1].split('=')[1].split(']')[0].split('"')[1];
+    return {
+      type: 'attr',
+      select: selector,
+      args: {
+        attr: attr,
+        type: attrType
+      }
+    }
+  } else {
+    return {
+      type: 'single',
+      select: selector,
+      args: '',
+    };
+  }
+
+}
 
 function $(selector) {
-  var elements;
-  var selSplit = selector.split(' ');
-  if (selSplit.length > 1) {
-    var matchFns = matchFunctions(selSplit);
-    elements = flatTraverseDom(matchFns);
-  } else {
-    var selectorMatchFunc = matchFunctionMaker.call(null, selector);
+  var elements, selectorMatchFunc;
+  var selectorObj = selectorParse(selector);
+  if (selectorObj.type === 'multi') {
+    var matchFnsArr = matchFunctions(selectorObj.select);
+    elements = flatTraverseDom(matchFnsArr);
+  }
+  if (selectorObj.type === 'single') {
+    selectorMatchFunc = matchFunctionMaker.call(null, selectorObj.select);
     elements = traverseDomAndCollectElements(selectorMatchFunc);
   }
+  if (selectorObj.type === 'attr') {
+    selectorMatchFunc = matchFunctionMaker.call(null, selectorObj.select);
+    console.log(selectorMatchFunc)
+    elements = traverseDomAndCollectElements(selectorMatchFunc);
+    console.log(elements)
+      //console.log(selectorObj.select, elements)
+      //foundAttr = findAttributes(attrElements, selectorObj.args);
+      //return foundAttr;
+  };
   return elements;
 }
