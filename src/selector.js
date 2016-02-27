@@ -66,51 +66,66 @@ function traverseDomAndCollectElements(matchFunc, startEl, resultSet) {
   return resultSet;
 }
 
+function retChildNodes(elements) {
+  var res = [];
+  elements.forEach(function(el) {
+    for (var i = 0; i < el.childNodes.length; i++) {
+      res.push(el.childNodes[i]);
+    }
+  })
+  return res;
+}
+
 function flatTraverseDom(matchFuncArr, currNodes) {
-  var resultSet = resultSet || [];
+  var results;
   if (typeof currNodes === 'undefined') {
-    currNodes = document.body.childNodes;
+    // set all nodes from body to array
+    currNodes = Array.prototype.slice.call(document.body.childNodes);
   }
+  // iterate over matching functions, and then filter on currNodes
+  // if match found, build array, and continue filtering if needed
+  matchFuncArr.forEach(function(match) {
+    results = currNodes.filter(function(node) {
+      if (match(node)) {
+        return node
+      };
+    });
+    console.log(results)
+    currNodes = retChildNodes(results);
+  });
+  return results;
 
-  function retChildNodes(elements) {
-      var res = [];
-      elements.forEach(function(el) {
-        for (var i = 0; i < el.childNodes.length; i++) {
-          res.push(el.childNodes[i]);
-        }
-      })
-      return res;
-  }
 
-  var first = matchFuncArr[0];
-  var firstSet = [];
-  currNodes = currNodes;
-  for (var i = 0; i < currNodes.length; i++) {
-    if (first(currNodes[i])) {
-      firstSet.push(currNodes[i]);
-    }
-  }
-
-  var second = matchFuncArr[1];
-  var secondSet = [];
-  currNodes = retChildNodes(firstSet)
-  for (var i = 0; i < currNodes.length; i++) {
-    if (second(currNodes[i])) {
-      secondSet.push(currNodes[i]);
-    }
-  }
-  console.log(secondSet);
-
-  var third = matchFuncArr[2];
-  var thirdSet = [];
-  currNodes = retChildNodes(secondSet)
-  for (var i = 0; i < currNodes.length; i++) {
-    if (third(currNodes[i])) {
-      thirdSet.push(currNodes[i]);
-    }
-  }
-  console.log(thirdSet)
-
+  // var first = matchFuncArr[0];
+  // var firstSet = [];
+  // currNodes = currNodes;
+  // for (var i = 0; i < currNodes.length; i++) {
+  //   if (first(currNodes[i])) {
+  //     firstSet.push(currNodes[i]);
+  //   }
+  // }
+  // console.log(firstSet)
+  //
+  // var second = matchFuncArr[1];
+  // var secondSet = [];
+  // currNodes = retChildNodes(firstSet)
+  // for (var i = 0; i < currNodes.length; i++) {
+  //   if (second(currNodes[i])) {
+  //     secondSet.push(currNodes[i]);
+  //   }
+  // }
+  // console.log(secondSet);
+  //
+  // var third = matchFuncArr[2];
+  // var thirdSet = [];
+  // currNodes = retChildNodes(secondSet)
+  // for (var i = 0; i < currNodes.length; i++) {
+  //   if (third(currNodes[i])) {
+  //     thirdSet.push(currNodes[i]);
+  //   }
+  // }
+  // console.log(thirdSet) // no more found!
+  //
 }
 
 function matchFunctions(selectors) {
@@ -127,10 +142,10 @@ function $(selector) {
   var selSplit = selector.split(' ');
   if (selSplit.length > 1) {
     var matchFns = matchFunctions(selSplit);
-    var current = flatTraverseDom(matchFns);
+    elements = flatTraverseDom(matchFns);
   } else {
     var selectorMatchFunc = matchFunctionMaker.call(null, selector);
     elements = traverseDomAndCollectElements(selectorMatchFunc);
-    return elements;
   }
+  return elements;
 }

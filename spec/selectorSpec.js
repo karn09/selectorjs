@@ -112,4 +112,9 @@ describe("$ selector function", function() {
     elements = $('div > img');
     expect(elements.length).toEqual(7);
   })
+
+  it("should handle multiple selector hierarchy - select div > ul > li", function() {
+    elements = $('div > ul > li');
+    expect(elements.length).toEqual(18);
+  })
 });
