@@ -90,7 +90,7 @@ describe("$ selector function", function() {
 
   it("should select tag names", function() {
     elements = $('h2');
-    expect(elements.length).toEqual(3);
+    expect(elements.length).toEqual(4);
   });
 
   it("should select class", function() {
@@ -118,8 +118,9 @@ describe("$ selector function", function() {
     expect(elements.length).toEqual(18);
   })
 
-  it('should handle selectors that search for attributes', function() {
-    elements = $('input[type="checkbox"]');
-    expect(elements[0].toEqual('checkbox'))
+  it("should handle selectors that search for attributes", function() {
+    var el = $('input[type="checkbox"]');
+    console.log(el)
+    expect(el.length).toEqual(1);
   })
 });

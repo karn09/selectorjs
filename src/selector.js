@@ -12,6 +12,7 @@ function selectorTypeMatcher(selector) {
 }
 
 function matchFunctionMaker(selector) {
+
   function matchClass(elem, _class) {
     return elem.className.split(' ').indexOf(_class) !== -1;
   }
@@ -106,12 +107,14 @@ function matchFunctions(selectors) {
 // TODO: support selector input: $('input[type="text"]')
 // $('input')[0].attributes.type
 
-function findAttributes(elements, args) {
+function checkAttributes(elements, args) {
   var res = []
-  console.log(elements, args)
-  elements.forEach(function(element) {
-    res.push(element)
-  })
+  for (var i = 0; i < elements.length; i++) {
+    // console.log(elements[i].getAttribute(args['attr']) === args.type)
+    if (elements[i].getAttribute(args['attr']) === args.type) {
+      res.push(elements[i]);
+    }
+  }
   return res;
 }
 
@@ -156,7 +159,7 @@ function selectorParse(selector) {
 }
 
 function $(selector) {
-  var elements, selectorMatchFunc;
+  var elements, selectorMatchFunc, foundAttr;
   var selectorObj = selectorParse(selector);
   if (selectorObj.type === 'multi') {
     var matchFnsArr = matchFunctions(selectorObj.select);
@@ -168,11 +171,10 @@ function $(selector) {
   }
   if (selectorObj.type === 'attr') {
     selectorMatchFunc = matchFunctionMaker.call(null, selectorObj.select);
-    console.log(selectorMatchFunc)
+    // console.log(selectorMatchFunc)
+    // console.log(traverseDomAndCollectElements(selectorMatchFunc));
     elements = traverseDomAndCollectElements(selectorMatchFunc);
-    console.log(elements)
-      //console.log(selectorObj.select, elements)
-      //foundAttr = findAttributes(attrElements, selectorObj.args);
+    return checkAttributes(elements, selectorObj.args);
       //return foundAttr;
   };
   return elements;
